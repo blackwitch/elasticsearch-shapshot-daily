@@ -1,0 +1,7 @@
+{
+	"esRepoName" : "your_repo_name",
+	"esAddr" : "your_elastcisearch_addr",
+	"index_prefix" : "your-index-prefix",
+	"snapshot_prefix" : "daily-",
+	"schedule_cron" : "0 0 9 * * *"
+}
