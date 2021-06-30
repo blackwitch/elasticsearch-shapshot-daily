@@ -1,5 +1,3 @@
-const fs = require('fs');
-const http = require('http');
 const JSON = require('JSON');
 const schedule = require('node-schedule');
 const {Client} = require('@elastic/elasticsearch');
@@ -56,7 +54,7 @@ async function bExistsOnSnapshotRepository(_client, _name)
 		else
 			return false;
 	}catch(err){
-		console.log( err );	//	snapshot_missing_exception 
+		console.log( err.body.error );	//	snapshot_missing_exception 
 		return false;
 	}
 }
@@ -80,7 +78,7 @@ function makeSnapshot(_client, _idx_name_prefix, _day){
 				reject(" snapshot ERROR : " + _idx_name_prefix + _day  + " , error message :  " + err);
 			});
 		}else{
-			reject("incorrect indices [" + ss_info.body.indices + "]");
+			reject("no indices or already have snapshot [" + ss_info.body.indices + "]");
 		}
 	});
 }
