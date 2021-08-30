@@ -20,10 +20,19 @@ function shutdown(){
     process.exit(1);
 }
 
-var start_date_for_snapshot = getNextDay(new Date(), -1);
+var start_date_for_snapshot = new Date("2021-07-01"); //getNextDay(new Date(), -6);
 var j = schedule.scheduleJob(config.schedule_cron, async function(){
-
 	var today = new Date();
+	if( today .getDay() === 0 || today .getDay() === 6){	//	weekend
+		console.log("I should take a rest on weekends!");
+		return;
+	}
+	var limit = getNextDay(new Date(), -6);
+	var diffResult = start_date_for_snapshot.compare(limit);
+	if( diffResult >= 0  || diffResult === NaN){
+		console.log("데이터 구축 중 ", diffResult);
+		return;
+	}	
 	await makeSnapshot(esClient, config.index_prefix, start_date_for_snapshot.yyyymmdddot()).then((res)=>{
 		console.log( res )
 	}).catch((err)=> {
@@ -69,8 +78,9 @@ function makeSnapshot(_client, _idx_name_prefix, _day){
 				"indices" : _idx_name_prefix + _day
 			}
 		};
-
-		if( await bExistsInIndices(_client, ss_info.body.indices) !== false && await bExistsOnSnapshotRepository(_client, ss_info.snapshot) === false){
+		var noIndex = await bExistsInIndices(_client, ss_info.body.indices);
+		var alreadyHave = await bExistsOnSnapshotRepository(_client, ss_info.snapshot);
+		if( noIndex !== false && alreadyHave === false){
 			console.log(" START snapshot !!" ,ss_info.body.indices);
 			await _client.snapshot.create(ss_info).then((res)=>{
 			    resolve(res);
